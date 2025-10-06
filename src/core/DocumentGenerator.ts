@@ -86,7 +86,7 @@ export class DocumentGenerator {
   public async packAndUpload(): Promise<{downloadUrl: string, previewUrl?: string}> {
     try {
       // 检查付费状态
-      const paywallStatus = this.paywall.getStatus();
+      const paywallStatus = await this.paywall.getStatus();
       
       if (paywallStatus.needsPayment) {
         console.log(chalk.yellow('⚠️  免费使用次数已用完'));
@@ -96,8 +96,8 @@ export class DocumentGenerator {
       }
       
       // 记录使用次数
-      this.paywall.incrementCalls();
-      const remainingCalls = this.paywall.getRemainingFreeCalls();
+      await this.paywall.incrementCalls();
+      const remainingCalls = await this.paywall.getRemainingFreeCalls();
       
       console.log(chalk.green(`✅ 开始打包上传（剩余免费次数：${remainingCalls}次）`));
       

@@ -674,10 +674,10 @@ export class CodeBuddyMCPServer {
 
           try {
             // 检查付费墙
-            const deviceId = args.deviceId || this.paywall.getStatus().deviceId;
-            const calls = this.paywall.incrementCalls(deviceId);
+            const deviceId = args.deviceId || (await this.paywall.getStatus()).deviceId;
+            const calls = await this.paywall.incrementCalls(deviceId);
             
-            if (this.paywall.needsPayment(deviceId)) {
+            if (await this.paywall.needsPayment(deviceId)) {
               return {
                 content: [
                   {
@@ -704,8 +704,8 @@ export class CodeBuddyMCPServer {
                     success: true,
                     result: result,
                     calls_used: calls,
-                    remaining_free_calls: this.paywall.getRemainingFreeCalls(deviceId),
-                    message: `执行成功，剩余免费次数：${this.paywall.getRemainingFreeCalls(deviceId)}`
+                    remaining_free_calls: await this.paywall.getRemainingFreeCalls(deviceId),
+                    message: `执行成功，剩余免费次数：${await this.paywall.getRemainingFreeCalls(deviceId)}`
                   }, null, 2)
                 }
               ]
@@ -718,10 +718,10 @@ export class CodeBuddyMCPServer {
         case 'run_full_workflow': {
           try {
             // 检查付费墙
-            const deviceId = args.deviceId || this.paywall.getStatus().deviceId;
-            const calls = this.paywall.incrementCalls(deviceId);
+            const deviceId = args.deviceId || (await this.paywall.getStatus()).deviceId;
+            const calls = await this.paywall.incrementCalls(deviceId);
             
-            if (this.paywall.needsPayment(deviceId)) {
+            if (await this.paywall.needsPayment(deviceId)) {
               return {
                 content: [
                   {
@@ -750,8 +750,8 @@ export class CodeBuddyMCPServer {
                     success: true,
                     result: result,
                     calls_used: calls,
-                    remaining_free_calls: this.paywall.getRemainingFreeCalls(deviceId),
-                    message: `执行成功，剩余免费次数：${this.paywall.getRemainingFreeCalls(deviceId)}`
+                    remaining_free_calls: await this.paywall.getRemainingFreeCalls(deviceId),
+                    message: `执行成功，剩余免费次数：${await this.paywall.getRemainingFreeCalls(deviceId)}`
                   }, null, 2)
                 }
               ]

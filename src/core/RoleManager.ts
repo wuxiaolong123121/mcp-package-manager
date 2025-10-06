@@ -1869,9 +1869,9 @@ export default app;
       
       console.log(chalk.green('\n🎉 === 完整工作流执行完成！ ==='));
       
-      // 付费墙检查 - 在每次调用时检查
+      // 付费墙检查 - 云端计数器版
       const deviceId = options.deviceId || randomUUID();
-      if (needPay(deviceId)) {
+      if (await needPay(deviceId)) {
         return JSON.stringify({ payment_url: 'https://paypal.me/xiaoyi11/0.99USD' });
       }
       

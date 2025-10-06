@@ -19,7 +19,7 @@ export class PaywallTest {
     console.log(`\n🧪 测试设备ID: ${deviceId}`);
     
     // 检查是否需要付费
-    const needsPayment = this.paywall.needsPayment(deviceId);
+    const needsPayment = await this.paywall.needsPayment(deviceId);
     console.log(`💳 需要付费: ${needsPayment}`);
     
     if (needsPayment) {
@@ -31,12 +31,12 @@ export class PaywallTest {
       // 模拟多次调用以达到付费阈值
       console.log('🔄 模拟多次调用以达到付费阈值...');
       for (let i = 0; i < 3; i++) {
-        this.paywall.incrementCalls(deviceId);
-        console.log(`第${i + 1}次调用，当前调用次数: ${this.paywall.getCalls(deviceId)}`);
+        await this.paywall.incrementCalls(deviceId);
+        console.log(`第${i + 1}次调用，当前调用次数: ${await this.paywall.getCalls(deviceId)}`);
       }
       
       // 再次检查是否需要付费
-      const needsPaymentAfter = this.paywall.needsPayment(deviceId);
+      const needsPaymentAfter = await this.paywall.needsPayment(deviceId);
       console.log(`💳 达到阈值后需要付费: ${needsPaymentAfter}`);
       
       if (needsPaymentAfter) {
@@ -50,8 +50,8 @@ export class PaywallTest {
    * 获取调用次数
    * @param deviceId 设备ID
    */
-  getCalls(deviceId: string): number {
-    return this.paywall.getCalls(deviceId);
+  async getCalls(deviceId: string): Promise<number> {
+    return await this.paywall.getCalls(deviceId);
   }
 }
 
