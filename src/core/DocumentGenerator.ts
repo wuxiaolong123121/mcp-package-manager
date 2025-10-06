@@ -6,6 +6,7 @@
 import { ProjectStatus, RoleType, DocumentType, TaskStatus } from '../types';
 import { RoleManager } from './RoleManager';
 import { WorkflowEngine } from './WorkflowEngine';
+import { Paywall } from './Paywall';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import chalk from 'chalk';
@@ -17,11 +18,13 @@ export class DocumentGenerator {
   private roleManager: RoleManager;
   private workflowEngine: WorkflowEngine;
   private projectRoot: string;
+  private paywall: Paywall;
 
   constructor(roleManager: RoleManager, workflowEngine: WorkflowEngine, projectRoot: string) {
     this.roleManager = roleManager;
     this.workflowEngine = workflowEngine;
     this.projectRoot = projectRoot;
+    this.paywall = new Paywall();
   }
 
   /**
@@ -82,22 +85,38 @@ export class DocumentGenerator {
    */
   public async packAndUpload(): Promise<{downloadUrl: string, previewUrl?: string}> {
     try {
+      // 检查付费状态
+      const paywallStatus = this.paywall.getStatus();
+      
+      if (paywallStatus.needsPayment) {
+        console.log(chalk.yellow('⚠️  免费使用次数已用完'));
+        console.log(chalk.yellow(`已使用：${paywallStatus.calls} / ${paywallStatus.freeCalls} 次`));
+        console.log(chalk.blue(`💳 请前往支付：${paywallStatus.paymentUrl}`));
+        throw new Error('需要付费才能继续使用打包上传功能');
+      }
+      
+      // 记录使用次数
+      this.paywall.incrementCalls();
+      const remainingCalls = this.paywall.getRemainingFreeCalls();
+      
+      console.log(chalk.green(`✅ 开始打包上传（剩余免费次数：${remainingCalls}次）`));
+      
       const zipPath = await this.createProjectZip();
       const downloadUrl = await this.uploadToFileServer(zipPath);
       
       // 清理临时文件
       await fs.remove(zipPath);
       
-      console.log(chalk.green(`项目打包完成，下载链接：${downloadUrl}`));
+      console.log(chalk.green(`🎉 项目打包完成，下载链接：${downloadUrl}`));
       
       // 执行Vercel预览部署
       let previewUrl: string | undefined;
       try {
-        console.log(chalk.blue('开始Vercel预览部署...'));
+        console.log(chalk.blue('🚀 开始Vercel预览部署...'));
         previewUrl = await this.deployToVercel(this.projectRoot);
-        console.log(chalk.green('Vercel预览部署完成'));
+        console.log(chalk.green('✅ Vercel预览部署完成'));
       } catch (error) {
-        console.log(chalk.yellow('Vercel预览部署失败，继续执行后续流程'));
+        console.log(chalk.yellow('⚠️  Vercel预览部署失败，继续执行后续流程'));
         console.log(chalk.gray('错误详情：'), error);
       }
       
@@ -106,7 +125,7 @@ export class DocumentGenerator {
         previewUrl
       };
     } catch (error) {
-      console.error(chalk.red('打包上传失败：'), error);
+      console.error(chalk.red('❌ 打包上传失败：'), error);
       throw error;
     }
   }
@@ -188,7 +207,7 @@ export class DocumentGenerator {
    * @param projectPath 项目路径
    * @returns 预览URL
    */
-  public async deployToVercel(projectPath: string): Promise<string> {
+  private async deployToVercel(projectPath: string): Promise<string> {
     try {
       // 1. 生成vercel.json配置文件
       const vercelConfig = {

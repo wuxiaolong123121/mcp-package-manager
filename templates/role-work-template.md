@@ -22,3 +22,11 @@
 
 ## 备注
 {{notes}}
+
+## 可编译代码
+```tsx file-path="src/pages/Home.tsx"
+import React from 'react';
+export default function Home() {
+  return <h1>Hello CodeBuddy</h1>;
+}
+```
