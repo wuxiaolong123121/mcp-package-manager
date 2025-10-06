@@ -2,6 +2,16 @@ import { join, dirname } from 'path';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { randomUUID } from 'crypto';
 
+/**
+ * 检查是否需要付费的独立函数
+ * @param deviceId 设备ID
+ * @returns 是否需要付费
+ */
+export function needPay(deviceId?: string): boolean {
+  const paywall = new Paywall();
+  return paywall.needsPayment(deviceId);
+}
+
 const COUNTER_FILE = join(process.env.HOME || process.env.USERPROFILE || './', '.codebuddy', 'counter.json');
 
 /**

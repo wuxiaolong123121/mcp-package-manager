@@ -740,7 +740,7 @@ export class CodeBuddyMCPServer {
             }
             
             // 执行完整工作流
-            const result = await this.roleManager.runAllSteps(args.idea);
+            const result = await this.roleManager.runAllSteps(args.idea, { deviceId });
             
             return {
               content: [

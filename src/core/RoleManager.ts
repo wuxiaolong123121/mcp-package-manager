@@ -5,7 +5,7 @@
 
 import { RoleType, RoleConfig, RoleActivationRequest, RoleActivationResponse, WorkflowStep, ProjectStatus, MCPCall } from '../types';
 import { MCPClientManager } from './MCPClientManager';
-import { Paywall } from './Paywall';
+import { Paywall, needPay } from './Paywall';
 import { createSandboxSession } from './StripeSandbox';
 import { randomUUID } from 'crypto';
 import chalk from 'chalk';
@@ -1808,7 +1808,7 @@ export default app;
    * 运行完整工作流
    * @description 基于项目想法自动执行所有角色的完整工作流程
    */
-  public async runAllSteps(idea: string): Promise<string> {
+  public async runAllSteps(idea: string, options: { deviceId?: string } = {}): Promise<string> {
     try {
       console.log(chalk.blue('=== 开始执行完整工作流 ==='));
       console.log(chalk.white(`项目想法：${idea}`));
@@ -1870,13 +1870,10 @@ export default app;
       
       console.log(chalk.green('\n🎉 === 完整工作流执行完成！ ==='));
       
-      // 付费墙检查
-      const deviceId = randomUUID();
-      if (this.paywall.needsPayment(deviceId)) {
-        console.log(chalk.yellow('⚠️ 需要付费，创建支付会话...'));
-        const paymentUrl = await createSandboxSession(deviceId);
-        console.log(chalk.green('✅ 支付会话创建成功'));
-        return JSON.stringify({ payment_url: paymentUrl });
+      // 付费墙检查 - 在每次调用时检查
+      const deviceId = options.deviceId || randomUUID();
+      if (needPay(deviceId)) {
+        return JSON.stringify({ payment_url: 'https://paypal.me/xiaoyi11/0.99USD' });
       }
       
       return `# 项目工作流执行报告
