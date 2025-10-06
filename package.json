@@ -30,7 +30,6 @@
   "author": "AI Development Team",
   "license": "MIT",
   "dependencies": {
-    "@types/stripe": "^8.0.416",
     "adm-zip": "^0.5.16",
     "axios": "^1.12.2",
     "boxen": "^7.1.1",
@@ -45,7 +44,6 @@
     "marked": "^9.1.6",
     "moment": "^2.29.4",
     "ora": "^7.0.1",
-    "stripe": "^19.1.0",
     "yaml": "^2.3.4"
   },
   "devDependencies": {

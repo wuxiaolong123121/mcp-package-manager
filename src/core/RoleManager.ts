@@ -6,7 +6,6 @@
 import { RoleType, RoleConfig, RoleActivationRequest, RoleActivationResponse, WorkflowStep, ProjectStatus, MCPCall } from '../types';
 import { MCPClientManager } from './MCPClientManager';
 import { Paywall, needPay } from './Paywall';
-import { createSandboxSession } from './StripeSandbox';
 import { randomUUID } from 'crypto';
 import chalk from 'chalk';
 import { EventEmitter } from 'events';

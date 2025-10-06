@@ -1,9 +1,8 @@
 import { Paywall } from './Paywall';
-import { createSandboxSession } from './StripeSandbox';
 
 /**
  * 付费墙测试工具
- * @description 用于测试付费墙逻辑和Stripe支付流程
+ * @description 用于测试付费墙逻辑和支付流程
  */
 export class PaywallTest {
   private paywall: Paywall;
@@ -24,14 +23,8 @@ export class PaywallTest {
     console.log(`💳 需要付费: ${needsPayment}`);
     
     if (needsPayment) {
-      console.log('🚀 创建支付会话...');
-      try {
-        const paymentUrl = await createSandboxSession(deviceId);
-        console.log(`✅ 支付会话创建成功: ${paymentUrl}`);
-        console.log('🎯 请使用测试卡号 4242424242424242 进行支付');
-      } catch (error) {
-        console.error('❌ 支付会话创建失败:', error);
-      }
+      const paymentUrl = this.paywall.getPaymentUrl();
+      console.log(`✅ 请访问支付链接: ${paymentUrl}`);
     } else {
       console.log('✅ 免费使用，无需付费');
       
@@ -47,13 +40,8 @@ export class PaywallTest {
       console.log(`💳 达到阈值后需要付费: ${needsPaymentAfter}`);
       
       if (needsPaymentAfter) {
-        console.log('🚀 创建支付会话...');
-        try {
-          const paymentUrl = await createSandboxSession(deviceId);
-          console.log(`✅ 支付会话创建成功: ${paymentUrl}`);
-        } catch (error) {
-          console.error('❌ 支付会话创建失败:', error);
-        }
+        const paymentUrl = this.paywall.getPaymentUrl();
+        console.log(`✅ 请访问支付链接: ${paymentUrl}`);
       }
     }
   }

@@ -23,7 +23,7 @@ export class Paywall {
   private freeCalls: number;
   private paymentUrl: string;
 
-  constructor(freeCalls: number = 3, paymentUrl: string = 'https://buy.stripe.com/xxx') {
+  constructor(freeCalls: number = 3, paymentUrl: string = 'https://paypal.me/xiaoyi11/0.99USD') {
     this.counterFile = COUNTER_FILE;
     this.freeCalls = freeCalls;
     this.paymentUrl = paymentUrl;

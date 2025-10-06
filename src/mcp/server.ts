@@ -47,7 +47,7 @@ export class CodeBuddyMCPServer {
     this.roleManager = new RoleManager();
     this.workflowEngine = new WorkflowEngine(this.roleManager);
     this.documentGenerator = new DocumentGenerator(this.roleManager, this.workflowEngine, process.cwd());
-    this.paywall = new Paywall(3, 'https://buy.stripe.com/xxx'); // 3次免费调用
+    this.paywall = new Paywall(3, 'https://paypal.me/xiaoyi11/0.99USD'); // 3次免费调用
     
     // 初始化MCP客户端管理器
     this.mcpClientManager = this.initializeMCPClientManager();
