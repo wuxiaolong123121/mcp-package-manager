@@ -5,6 +5,9 @@
 
 import { RoleType, RoleConfig, RoleActivationRequest, RoleActivationResponse, WorkflowStep, ProjectStatus, MCPCall } from '../types';
 import { MCPClientManager } from './MCPClientManager';
+import { Paywall } from './Paywall';
+import { createSandboxSession } from './StripeSandbox';
+import { randomUUID } from 'crypto';
 import chalk from 'chalk';
 import { EventEmitter } from 'events';
 
@@ -14,11 +17,13 @@ export class RoleManager extends EventEmitter {
   private roleWorkflows: Map<string, any> = new Map();
   private conversationHistory: Map<RoleType, string[]> = new Map();
   private mcpManager: MCPClientManager;
+  private paywall: Paywall;
 
   constructor() {
     super();
     // 初始化MCP管理器（空配置，后续通过initializeClients加载）
     this.mcpManager = new MCPClientManager({});
+    this.paywall = new Paywall();
     this.initializeRoleConfigs();
   }
 
@@ -1864,6 +1869,15 @@ export default app;
       }
       
       console.log(chalk.green('\n🎉 === 完整工作流执行完成！ ==='));
+      
+      // 付费墙检查
+      const deviceId = randomUUID();
+      if (this.paywall.needsPayment(deviceId)) {
+        console.log(chalk.yellow('⚠️ 需要付费，创建支付会话...'));
+        const paymentUrl = await createSandboxSession(deviceId);
+        console.log(chalk.green('✅ 支付会话创建成功'));
+        return JSON.stringify({ payment_url: paymentUrl });
+      }
       
       return `# 项目工作流执行报告
 
