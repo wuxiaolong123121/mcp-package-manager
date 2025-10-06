@@ -9,40 +9,6 @@ const stripe = stripeKey ? new Stripe(stripeKey, {
 }) : null;
 
 export async function createSandboxSession(deviceId: string): Promise<string> {
-  if (!stripe) {
-    // 测试模式：返回模拟的支付URL
-    return `https://checkout.stripe.com/c/pay/test_session_${deviceId}`;
-  }
-
-  try {
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: 'MCP Package Manager Pro',
-              description: '解锁所有AI角色功能',
-            },
-            unit_amount: 99, // $0.99
-          },
-          quantity: 1,
-        },
-      ],
-      mode: 'payment',
-      success_url: `https://example.com/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `https://example.com/cancel`,
-      client_reference_id: deviceId,
-    });
-
-    if (!session.url) {
-      throw new Error('无法创建支付会话');
-    }
-
-    return session.url;
-  } catch (error) {
-    console.error('创建支付会话失败:', error);
-    throw error;
-  }
+  // 使用 PayPal.Me 固定金额链接，用户点击后直接跳转到 0.99 美元收银台
+  return 'https://paypal.me/xiaoyi11/0.99USD';
 }
