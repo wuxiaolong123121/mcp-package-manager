@@ -1575,7 +1575,22 @@ export class RoleManager extends EventEmitter {
           server: 'Sequential Thinking',
           tool: 'sequentialthinking',
           arguments: {
-            query: '设计智能任务管理系统的前端组件架构，包括任务列表组件、筛选组件、统计组件的状态管理和性能优化策略'
+            query: `设计智能任务管理系统的前端组件架构，包括任务列表组件、筛选组件、统计组件的状态管理和性能优化策略。
+
+输出要求：
+1. 生成可编译的React+TypeScript代码
+2. 代码需要包含完整的文件结构
+3. 每个文件都要有明确的file-path标注
+4. 包含package.json、组件文件、样式文件等
+
+示例格式：
+\`\`\`tsx file-path="src/pages/Home.tsx"
+import React from 'react';
+
+export default function Home() {
+  return <h1>Hello CodeBuddy</h1>;
+}
+\`\`\``
           },
           useResult: true
         }]
@@ -1675,7 +1690,25 @@ export class RoleManager extends EventEmitter {
           server: 'Sequential Thinking',
           tool: 'sequentialthinking',
           arguments: {
-            query: '设计智能任务管理系统的核心业务逻辑，包括任务CRUD、权限控制、数据统计、性能优化策略'
+            query: `设计智能任务管理系统的核心业务逻辑，包括任务CRUD、权限控制、数据统计、性能优化策略。
+
+输出要求：
+1. 生成可编译的后端代码（Node.js/Express + TypeScript）
+2. 包含完整的项目结构和配置文件
+3. 数据库模型和API接口实现
+4. 每个文件都要有明确的file-path标注
+
+示例格式：
+\`\`\`typescript file-path="src/app.ts"
+import express from 'express';
+import cors from 'cors';
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+export default app;
+\`\`\``
           },
           useResult: true
         }]

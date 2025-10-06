@@ -14,6 +14,7 @@ import { RoleManager } from '../core/RoleManager';
 import { WorkflowEngine } from '../core/WorkflowEngine';
 import { DocumentGenerator } from '../core/DocumentGenerator';
 import { MCPClientManager } from '../core/MCPClientManager';
+import { Paywall } from '../core/Paywall';
 import { ProjectInfo, WorkflowStep, RoleType, ProjectStatus } from '../types';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -28,6 +29,7 @@ export class CodeBuddyMCPServer {
   private workflowEngine: WorkflowEngine;
   private documentGenerator: DocumentGenerator;
   private mcpClientManager: MCPClientManager;
+  private paywall: Paywall;
 
   constructor() {
     this.server = new Server(
@@ -45,6 +47,7 @@ export class CodeBuddyMCPServer {
     this.roleManager = new RoleManager();
     this.workflowEngine = new WorkflowEngine(this.roleManager);
     this.documentGenerator = new DocumentGenerator(this.roleManager, this.workflowEngine, process.cwd());
+    this.paywall = new Paywall(3, 'https://buy.stripe.com/xxx'); // 3次免费调用
     
     // 初始化MCP客户端管理器
     this.mcpClientManager = this.initializeMCPClientManager();
@@ -153,6 +156,10 @@ export class CodeBuddyMCPServer {
               type: 'string',
               description: '需求描述',
             },
+            deviceId: {
+              type: 'string',
+              description: '设备ID（可选，用于付费墙统计）',
+            },
           },
           required: ['requirement'],
         },
@@ -166,6 +173,10 @@ export class CodeBuddyMCPServer {
             requirement: {
               type: 'string',
               description: '需求描述',
+            },
+            deviceId: {
+              type: 'string',
+              description: '设备ID（可选，用于付费墙统计）',
             },
           },
           required: ['requirement'],
@@ -181,6 +192,10 @@ export class CodeBuddyMCPServer {
               type: 'string',
               description: '需求描述',
             },
+            deviceId: {
+              type: 'string',
+              description: '设备ID（可选，用于付费墙统计）',
+            },
           },
           required: ['requirement'],
         },
@@ -194,6 +209,10 @@ export class CodeBuddyMCPServer {
             requirement: {
               type: 'string',
               description: '需求描述',
+            },
+            deviceId: {
+              type: 'string',
+              description: '设备ID（可选，用于付费墙统计）',
             },
           },
           required: ['requirement'],
@@ -209,6 +228,10 @@ export class CodeBuddyMCPServer {
               type: 'string',
               description: '需求描述',
             },
+            deviceId: {
+              type: 'string',
+              description: '设备ID（可选，用于付费墙统计）',
+            },
           },
           required: ['requirement'],
         },
@@ -223,6 +246,10 @@ export class CodeBuddyMCPServer {
               type: 'string',
               description: '需求描述',
             },
+            deviceId: {
+              type: 'string',
+              description: '设备ID（可选，用于付费墙统计）',
+            },
           },
           required: ['requirement'],
         },
@@ -236,6 +263,10 @@ export class CodeBuddyMCPServer {
             idea: {
               type: 'string',
               description: '项目想法',
+            },
+            deviceId: {
+              type: 'string',
+              description: '设备ID（可选，用于付费墙统计）',
             },
           },
           required: ['idea'],
@@ -642,12 +673,40 @@ export class CodeBuddyMCPServer {
           }
 
           try {
+            // 检查付费墙
+            const deviceId = args.deviceId || this.paywall.getStatus().deviceId;
+            const calls = this.paywall.incrementCalls(deviceId);
+            
+            if (this.paywall.needsPayment(deviceId)) {
+              return {
+                content: [
+                  {
+                    type: 'text',
+                    text: JSON.stringify({ 
+                      success: false,
+                      payment_required: true,
+                      payment_url: this.paywall.getPaymentUrl(),
+                      message: `您已使用 ${calls} 次免费调用，请扫码付费继续使用`,
+                      calls_used: calls,
+                      free_calls: 3
+                    }, null, 2)
+                  }
+                ]
+              };
+            }
+            
             const result = await this.roleManager.activateAndRun(roleType, args.requirement);
             return {
               content: [
                 {
                   type: 'text',
-                  text: result
+                  text: JSON.stringify({ 
+                    success: true,
+                    result: result,
+                    calls_used: calls,
+                    remaining_free_calls: this.paywall.getRemainingFreeCalls(deviceId),
+                    message: `执行成功，剩余免费次数：${this.paywall.getRemainingFreeCalls(deviceId)}`
+                  }, null, 2)
                 }
               ]
             };
@@ -658,12 +717,42 @@ export class CodeBuddyMCPServer {
 
         case 'run_full_workflow': {
           try {
+            // 检查付费墙
+            const deviceId = args.deviceId || this.paywall.getStatus().deviceId;
+            const calls = this.paywall.incrementCalls(deviceId);
+            
+            if (this.paywall.needsPayment(deviceId)) {
+              return {
+                content: [
+                  {
+                    type: 'text',
+                    text: JSON.stringify({ 
+                      success: false,
+                      payment_required: true,
+                      payment_url: this.paywall.getPaymentUrl(),
+                      message: `您已使用 ${calls} 次免费调用，请扫码付费继续使用`,
+                      calls_used: calls,
+                      free_calls: 3
+                    }, null, 2)
+                  }
+                ]
+              };
+            }
+            
+            // 执行完整工作流
             const result = await this.roleManager.runAllSteps(args.idea);
+            
             return {
               content: [
                 {
                   type: 'text',
-                  text: result
+                  text: JSON.stringify({ 
+                    success: true,
+                    result: result,
+                    calls_used: calls,
+                    remaining_free_calls: this.paywall.getRemainingFreeCalls(deviceId),
+                    message: `执行成功，剩余免费次数：${this.paywall.getRemainingFreeCalls(deviceId)}`
+                  }, null, 2)
                 }
               ]
             };

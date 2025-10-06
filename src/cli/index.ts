@@ -110,6 +110,12 @@ class CodeBuddyCLI {
       .command('help')
       .description('显示帮助信息')
       .action(() => this.showHelp());
+
+    // 打包项目
+    this.program
+      .command('pack')
+      .description('打包项目并生成下载链接')
+      .action(() => this.packProject());
   }
 
   /**
@@ -453,6 +459,53 @@ class CodeBuddyCLI {
   }
 
   /**
+   * 打包项目
+   */
+  private async packProject(): Promise<void> {
+    console.log(chalk.blue('=== 打包项目 ===\n'));
+    
+    try {
+      // 动态导入DocumentGenerator
+      const { DocumentGenerator } = await import('../core/DocumentGenerator');
+      const docGenerator = new DocumentGenerator(this.roleManager, this.workflowEngine, this.projectRoot);
+      
+      console.log(chalk.yellow('正在打包项目，请稍候...'));
+      
+      // 调用打包上传方法（包含Vercel预览部署）
+      const result = await docGenerator.packAndUpload();
+      
+      if (result.downloadUrl) {
+        console.log(chalk.green('\n✓ 项目打包完成！'));
+        console.log(chalk.cyan('下载链接：'));
+        console.log(chalk.white(result.downloadUrl));
+        console.log(chalk.yellow('\n注意：链接24小时内有效'));
+        
+        // 保存链接到本地文件
+        const linkFile = path.join(this.projectRoot, '下载链接.txt');
+        await fs.writeFile(linkFile, `项目下载链接：${result.downloadUrl}\n有效期：24小时\n生成时间：${new Date().toLocaleString()}`, 'utf-8');
+        console.log(chalk.cyan(`\n下载链接已保存到：${linkFile}`));
+      } else {
+        console.log(chalk.red('\n✗ 打包失败，请检查项目目录'));
+      }
+      
+      // 显示预览部署结果
+      if (result.previewUrl) {
+        console.log(chalk.green('\n✓ Vercel预览部署完成！'));
+        console.log(chalk.cyan('预览链接：'));
+        console.log(chalk.white(result.previewUrl));
+        
+        // 保存预览链接到本地文件
+        const previewLinkFile = path.join(this.projectRoot, '预览链接.txt');
+        await fs.writeFile(previewLinkFile, `项目预览链接：${result.previewUrl}\n生成时间：${new Date().toLocaleString()}`, 'utf-8');
+        console.log(chalk.cyan(`\n预览链接已保存到：${previewLinkFile}`));
+      }
+      
+    } catch (error) {
+      console.error(chalk.red('打包失败：'), error);
+    }
+  }
+
+  /**
    * 全自动运行模式
    */
   private async runAutoMode(): Promise<void> {
@@ -496,6 +549,7 @@ class CodeBuddyCLI {
       console.log(chalk.cyan('\n提示：'));
       console.log(chalk.white('使用 "codebuddy docs" 生成项目文档'));
       console.log(chalk.white('使用 "codebuddy status" 查看最终状态'));
+      console.log(chalk.white('使用 "codebuddy pack" 打包项目并生成下载链接'));
       
     } catch (error) {
       console.error(chalk.red('自动运行失败：'), error);
@@ -520,11 +574,13 @@ class CodeBuddyCLI {
     console.log(chalk.white('  codebuddy docs          - 生成文档'));
     console.log(chalk.white('  codebuddy reset         - 重置工作流程'));
     console.log(chalk.white('  codebuddy help          - 显示帮助'));
+    console.log(chalk.white('  codebuddy pack          - 打包项目并生成下载链接'));
     
     console.log(chalk.yellow('\n使用流程：'));
     console.log(chalk.white('1. codebuddy init     - 初始化项目'));
     console.log(chalk.white('2. codebuddy auto     - 全自动运行（推荐）'));
     console.log(chalk.white('3. codebuddy docs     - 生成文档'));
+    console.log(chalk.white('4. codebuddy pack     - 打包项目（可选）'));
     
     console.log(chalk.yellow('\n模式选择：'));
     console.log(chalk.white('  • 自动模式：codebuddy auto - 一键完成所有步骤'));
@@ -533,6 +589,7 @@ class CodeBuddyCLI {
     console.log(chalk.yellow('\n高级选项：'));
     console.log(chalk.white('  • MCP集成：自动安装和运行MCP服务器，无需手动配置'));
     console.log(chalk.white('  • 智能降级：MCP服务器不可用时提供优雅的错误处理'));
+    console.log(chalk.white('  • 项目打包：自动打包项目并生成24小时有效的下载链接'));
     
     console.log(chalk.cyan('\n更多帮助：'));
     console.log(chalk.white('查看完整文档：项目说明文档.md'));

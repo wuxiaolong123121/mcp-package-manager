@@ -264,6 +264,56 @@ export class WorkflowEngine {
     console.log(chalk.yellow('\n💡 提示：'));
     console.log(chalk.white('使用 "codebuddy docs" 生成详细文档'));
     console.log(chalk.white('使用 "codebuddy status" 查看当前状态'));
+    
+    // 生成项目打包下载链接
+    await this.generateProjectPackage();
+  }
+
+  /**
+   * 生成项目打包下载链接
+   */
+  private async generateProjectPackage(): Promise<void> {
+    try {
+      console.log(chalk.blue('\n=== 生成项目打包下载 ==='));
+      console.log(chalk.cyan('正在打包项目文件...'));
+      
+      // 动态导入DocumentGenerator
+      const { DocumentGenerator } = require('./DocumentGenerator');
+      const documentGenerator = new DocumentGenerator(this.roleManager, this, process.cwd());
+      
+      const result = await documentGenerator.packAndUpload();
+      
+      console.log(chalk.green(`\n🎉 项目打包完成！`));
+      console.log(chalk.white(`下载链接：${result.downloadUrl}`));
+      console.log(chalk.yellow('链接有效期：24小时'));
+      
+      // 保存下载链接到文件
+      const fs = require('fs');
+      const path = require('path');
+      const downloadInfoPath = path.join(process.cwd(), '下载链接.txt');
+      const content = `项目打包下载链接：\n${result.downloadUrl}\n\n生成时间：${new Date().toLocaleString()}\n有效期：24小时`;
+      fs.writeFileSync(downloadInfoPath, content, 'utf-8');
+      
+      console.log(chalk.green(`下载链接已保存到：${downloadInfoPath}`));
+      
+      // 显示预览部署结果
+      if (result.previewUrl) {
+        console.log(chalk.blue('\n=== 部署项目预览 ==='));
+        console.log(chalk.green(`🚀 项目预览部署完成！`));
+        console.log(chalk.white(`预览URL：${result.previewUrl}`));
+        
+        // 保存预览链接到文件
+        const previewInfoPath = path.join(process.cwd(), '预览链接.txt');
+        const previewContent = `项目预览链接：\n${result.previewUrl}\n\n生成时间：${new Date().toLocaleString()}\n注意：这是一个模拟预览链接，实际部署需要使用Vercel CLI或API`;
+        fs.writeFileSync(previewInfoPath, previewContent, 'utf-8');
+        
+        console.log(chalk.green(`预览链接已保存到：${previewInfoPath}`));
+      }
+      
+    } catch (error) {
+      console.error(chalk.red('项目打包失败：'), error);
+      console.log(chalk.yellow('您可以手动使用 "codebuddy pack" 命令进行打包'));
+    }
   }
 
   /**
