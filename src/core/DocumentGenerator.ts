@@ -134,6 +134,41 @@ ${this.generateDetailedProgress()}
 ### 3.3 下一步计划
 ${this.generateNextSteps()}
 
+## 四、代码示例
+
+### 4.1 快速开始
+\`\`\`bash
+# 安装依赖
+npm install
+
+# 启动开发环境
+npm run dev
+
+# 启动MCP服务器
+npm run mcp
+\`\`\`
+
+### 4.2 基本使用
+\`\`\`typescript
+import { CodeBuddyMCPServer } from 'codebuddy-cn-agent';
+
+const server = new CodeBuddyMCPServer();
+await server.run();
+\`\`\`
+
+### 4.3 工作流调用
+\`\`\`typescript
+// 创建项目工作流
+const workflow = await workflowEngine.createWorkflow({
+  name: '我的项目',
+  type: 'Web应用',
+  description: '项目描述'
+});
+
+// 执行下一步
+await workflowEngine.executeNextStep();
+\`\`\`
+
 ---
 
 *本文档由CodeBuddy CN Agent自动生成，如有疑问请联系项目团队。*

@@ -4,7 +4,8 @@
   "description": "CodeBuddy CN Agent 快速启动配置系统 - AI开发团队六角色工作流管理",
   "main": "dist/index.js",
   "bin": {
-    "codebuddy": "./dist/cli.js"
+    "codebuddy": "./dist/cli.js",
+    "codebuddy-mcp": "./dist/mcp/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -12,6 +13,8 @@
     "dev": "ts-node src/index.ts",
     "mcp": "ts-node src/mcp/index.ts",
     "mcp:build": "tsc && node -r tsconfig-paths/register dist/mcp/index.js",
+    "mcp:install": "npm install -g .",
+    "mcp:uninstall": "npm uninstall -g codebuddy-cn-agent",
     "test": "jest",
     "lint": "eslint src/**/*.ts"
   },

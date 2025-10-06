@@ -142,6 +142,106 @@ export class CodeBuddyMCPServer {
         },
       },
 
+      // 核心AI角色工具
+      {
+        name: 'tech_lead_analyze',
+        description: '技术总监：需求拆解 + 架构 + 任务分配',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            requirement: {
+              type: 'string',
+              description: '需求描述',
+            },
+          },
+          required: ['requirement'],
+        },
+      },
+      {
+        name: 'product_manager_write_prd',
+        description: '产品经理：输出 PRD 与优先级',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            requirement: {
+              type: 'string',
+              description: '需求描述',
+            },
+          },
+          required: ['requirement'],
+        },
+      },
+      {
+        name: 'ui_designer_design',
+        description: 'UI 设计师：页面草图 + 设计规范',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            requirement: {
+              type: 'string',
+              description: '需求描述',
+            },
+          },
+          required: ['requirement'],
+        },
+      },
+      {
+        name: 'frontend_dev_code',
+        description: '前端工程师：生成可编译页面代码',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            requirement: {
+              type: 'string',
+              description: '需求描述',
+            },
+          },
+          required: ['requirement'],
+        },
+      },
+      {
+        name: 'backend_dev_api',
+        description: '后端工程师：RESTful API + 数据库设计',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            requirement: {
+              type: 'string',
+              description: '需求描述',
+            },
+          },
+          required: ['requirement'],
+        },
+      },
+      {
+        name: 'test_engineer_plan',
+        description: '测试工程师：测试用例 + Bug 清单',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            requirement: {
+              type: 'string',
+              description: '需求描述',
+            },
+          },
+          required: ['requirement'],
+        },
+      },
+      {
+        name: 'run_full_workflow',
+        description: '一键全流程：输入一句话需求，返回 6 合 1 报告',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            idea: {
+              type: 'string',
+              description: '项目想法',
+            },
+          },
+          required: ['idea'],
+        },
+      },
+
       // 工作流管理工具
       {
         name: 'create_workflow',
@@ -501,7 +601,7 @@ export class CodeBuddyMCPServer {
                   type: 'text',
                   text: JSON.stringify({ 
                     success: true,
-                    message: 'MCP服务器配置已重新加载'
+                    message: 'MCP服务器已重新加载'
                   }, null, 2)
                 }
               ]
@@ -513,20 +613,80 @@ export class CodeBuddyMCPServer {
                   type: 'text',
                   text: JSON.stringify({ 
                     success: false,
-                    error: error instanceof Error ? error.message : '重载失败'
+                    error: error instanceof Error ? error.message : '重新加载失败'
                   }, null, 2)
                 }
               ]
             };
           }
 
+        // 核心AI角色工具处理
+        case 'tech_lead_analyze':
+        case 'product_manager_write_prd':
+        case 'ui_designer_design':
+        case 'frontend_dev_code':
+        case 'backend_dev_api':
+        case 'test_engineer_plan': {
+          const roleMap: Record<string, RoleType> = {
+            'tech_lead_analyze': 'tech-lead',
+            'product_manager_write_prd': 'product-manager',
+            'ui_designer_design': 'ui-designer',
+            'frontend_dev_code': 'frontend-dev',
+            'backend_dev_api': 'backend-dev',
+            'test_engineer_plan': 'test-engineer'
+          };
+          
+          const roleType = roleMap[name];
+          if (!roleType) {
+            throw new Error(`未知的角色工具: ${name}`);
+          }
+
+          try {
+            const result = await this.roleManager.activateAndRun(roleType, args.requirement);
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: result
+                }
+              ]
+            };
+          } catch (error) {
+            throw new Error(`执行角色任务失败: ${error instanceof Error ? error.message : '未知错误'}`);
+          }
+        }
+
+        case 'run_full_workflow': {
+          try {
+            const result = await this.roleManager.runAllSteps(args.idea);
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: result
+                }
+              ]
+            };
+          } catch (error) {
+            throw new Error(`执行完整工作流失败: ${error instanceof Error ? error.message : '未知错误'}`);
+          }
+        }
+
         default:
-          throw new Error(`未知工具: ${name}`);
+          throw new Error(`未知的工具: ${name}`);
       }
     } catch (error) {
+      console.error(chalk.red(`处理工具调用失败: ${name}`), error);
       return {
-        success: false,
-        error: error instanceof Error ? error.message : '未知错误',
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({ 
+              success: false,
+              error: error instanceof Error ? error.message : '处理工具调用失败'
+            }, null, 2)
+          }
+        ]
       };
     }
   }
