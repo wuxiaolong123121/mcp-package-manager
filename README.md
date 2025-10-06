@@ -283,8 +283,4 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 
 ---
 
-**CodeBuddy CN Agent** - 让AI开发团队协作更高效！🚀
-=======
-# mcp-package-manager
-Agent 是一个智能化的AI开发团队管理系统
->>>>>>> 25bd1b9b6ffed7f8d6904b728f92ee3680c69e4d
+**MCP Package Manager** - 让AI开发团队协作更高效！🚀
