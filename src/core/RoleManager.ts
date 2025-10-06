@@ -1044,6 +1044,25 @@ export class RoleManager extends EventEmitter {
   }
 
   /**
+   * 激活并运行角色（MCP服务器代理方法）
+   */
+  async activateAndRun(roleKey: string, requirement: string): Promise<string> {
+    // 激活角色
+    const result = await this.activateRole({
+      role: roleKey as RoleType,
+      projectInfo: { name: '当前项目', type: 'Web应用', description: '', targetUsers: '', status: ProjectStatus.DEVELOPING, createdAt: new Date(), updatedAt: new Date(), progress: 50 },
+      context: requirement,
+      autoMode: true
+    });
+    
+    if (result.success) {
+      return result.output || '角色激活成功';
+    } else {
+      throw new Error(result.error || '角色激活失败');
+    }
+  }
+
+  /**
    * 生成激活输出
    */
   private generateActivationOutput(config: RoleConfig, projectInfo: any, context?: string, previousOutput?: string): string {
@@ -1745,5 +1764,115 @@ export class RoleManager extends EventEmitter {
         }]
       }
     ];
+  }
+
+  /**
+   * 运行完整工作流
+   * @description 基于项目想法自动执行所有角色的完整工作流程
+   */
+  public async runAllSteps(idea: string): Promise<string> {
+    try {
+      console.log(chalk.blue('=== 开始执行完整工作流 ==='));
+      console.log(chalk.white(`项目想法：${idea}`));
+      
+      // 创建项目信息
+      const projectInfo = {
+        name: idea.substring(0, 50) + (idea.length > 50 ? '...' : ''),
+        type: 'Web应用',
+        description: idea,
+        targetUsers: '普通用户',
+        status: '开发中' as ProjectStatus,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        progress: 0
+      };
+
+      // 按顺序激活所有角色
+      const allRoles = [
+        RoleType.TECH_LEAD,
+        RoleType.PRODUCT_MANAGER, 
+        RoleType.UI_DESIGNER,
+        RoleType.BACKEND_DEVELOPER,
+        RoleType.FRONTEND_DEVELOPER,
+        RoleType.TEST_ENGINEER
+      ];
+
+      const results: string[] = [];
+      
+      for (let i = 0; i < allRoles.length; i++) {
+        const role = allRoles[i];
+        console.log(chalk.yellow(`\n[${i + 1}/${allRoles.length}] 激活角色：${this.getRoleName(role)}`));
+        
+        try {
+          const result = await this.activateRole({
+            role,
+            projectInfo,
+            context: results.join('\n---\n'),
+            autoMode: true
+          });
+          
+          if (result.success) {
+            console.log(chalk.green(`✓ ${role} 执行成功`));
+            results.push(`## ${this.getRoleName(role)}\n${result.output || '完成任务'}`);
+          } else {
+            console.log(chalk.red(`✗ ${role} 执行失败：${result.error}`));
+            results.push(`## ${this.getRoleName(role)}\n执行失败：${result.error}`);
+          }
+        } catch (error) {
+          console.log(chalk.red(`✗ ${role} 执行异常：${error instanceof Error ? error.message : String(error)}`));
+          results.push(`## ${this.getRoleName(role)}\n执行异常：${error instanceof Error ? error.message : String(error)}`);
+        }
+        
+        // 步骤间停顿
+        if (i < allRoles.length - 1) {
+          console.log(chalk.gray('准备下一个角色...'));
+          await this.delay(1000);
+        }
+      }
+      
+      console.log(chalk.green('\n🎉 === 完整工作流执行完成！ ==='));
+      
+      return `# 项目工作流执行报告
+
+## 项目信息
+- **项目想法**：${idea}
+- **执行时间**：${new Date().toLocaleString()}
+- **总角色数**：${allRoles.length}
+
+## 各角色执行结果
+${results.join('\n\n')}
+
+## 总结
+项目已完成所有角色的自动协作流程，每个角色都基于项目需求完成了相应的专业工作。
+
+---
+*报告由CodeBuddy AI团队自动生成*`;
+      
+    } catch (error) {
+      console.error(chalk.red('执行完整工作流失败：'), error);
+      throw new Error(`执行完整工作流失败：${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * 获取角色显示名称
+   */
+  private getRoleName(role: RoleType): string {
+    const roleNames: Record<RoleType, string> = {
+      [RoleType.TECH_LEAD]: '技术总监',
+      [RoleType.PRODUCT_MANAGER]: '产品经理',
+      [RoleType.UI_DESIGNER]: 'UI设计师',
+      [RoleType.FRONTEND_DEVELOPER]: '前端工程师',
+      [RoleType.BACKEND_DEVELOPER]: '后端工程师',
+      [RoleType.TEST_ENGINEER]: '测试工程师'
+    };
+    return roleNames[role] || role;
+  }
+
+  /**
+   * 延迟工具函数
+   */
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }

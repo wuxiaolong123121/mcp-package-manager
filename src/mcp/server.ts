@@ -628,12 +628,12 @@ export class CodeBuddyMCPServer {
         case 'backend_dev_api':
         case 'test_engineer_plan': {
           const roleMap: Record<string, RoleType> = {
-            'tech_lead_analyze': 'tech-lead',
-            'product_manager_write_prd': 'product-manager',
-            'ui_designer_design': 'ui-designer',
-            'frontend_dev_code': 'frontend-dev',
-            'backend_dev_api': 'backend-dev',
-            'test_engineer_plan': 'test-engineer'
+            'tech_lead_analyze': RoleType.TECH_LEAD,
+            'product_manager_write_prd': RoleType.PRODUCT_MANAGER,
+            'ui_designer_design': RoleType.UI_DESIGNER,
+            'frontend_dev_code': RoleType.FRONTEND_DEVELOPER,
+            'backend_dev_api': RoleType.BACKEND_DEVELOPER,
+            'test_engineer_plan': RoleType.TEST_ENGINEER
           };
           
           const roleType = roleMap[name];

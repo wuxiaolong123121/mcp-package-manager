@@ -19,7 +19,10 @@ export class WorkflowEngine {
     this.roleManager = roleManager;
     this.projectStatus = ProjectStatus.INITIATED;
     this.initializeWorkflow();
-    this.loadWorkflowState();
+    // 异步加载工作流状态
+    this.loadWorkflowState().catch(error => {
+      console.warn('工作流状态加载失败:', error);
+    });
   }
 
   /**
@@ -433,14 +436,14 @@ export class WorkflowEngine {
   /**
    * 加载工作流状态
    */
-  private loadWorkflowState(): void {
+  private async loadWorkflowState(): Promise<void> {
     try {
-      const fs = require('fs');
+      const fs = require('fs').promises;
       const path = require('path');
       const statePath = path.join(process.cwd(), '.workflow-state.json');
       
-      if (fs.existsSync(statePath)) {
-        const stateData = fs.readFileSync(statePath, 'utf-8');
+      try {
+        const stateData = await fs.readFile(statePath, 'utf-8');
         const state = JSON.parse(stateData);
         
         this.projectStatus = state.projectStatus;
@@ -455,6 +458,11 @@ export class WorkflowEngine {
         });
         
         console.log(chalk.green('✓ 工作流状态已恢复'));
+      } catch (readError: any) {
+        // 文件不存在是正常情况
+        if (readError.code !== 'ENOENT') {
+          console.warn('无法加载工作流状态:', readError);
+        }
       }
     } catch (error) {
       console.warn('无法加载工作流状态:', error);

@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /**
  * CodeBuddy MCP 服务器入口文件
  * @description AI开发团队MCP服务器的主入口
