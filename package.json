@@ -1,6 +1,6 @@
 {
   "name": "codebuddy-cn-agent",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "CodeBuddy CN Agent 快速启动配置系统 - AI开发团队六角色工作流管理",
   "main": "dist/index.js",
   "bin": {
