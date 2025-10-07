@@ -9,6 +9,7 @@ import { Paywall, needPay } from './Paywall';
 import { randomUUID } from 'crypto';
 import chalk from 'chalk';
 import { EventEmitter } from 'events';
+import { t } from '../i18n';
 
 export class RoleManager extends EventEmitter {
   private activeRole: RoleType | null = null;
@@ -452,32 +453,48 @@ export class RoleManager extends EventEmitter {
               server: 'PostgreSQL',
               tool: 'query',
               arguments: {
-                query: 'SELECT table_name, column_name, data_type FROM information_schema.columns WHERE table_schema = \'public\' ORDER BY table_name, ordinal_position'
+                query: 'SELECT * FROM database_design_patterns ORDER BY complexity ASC'
               },
-              condition: 'context.hasDatabaseConnection',
+              condition: 'context.hasDatabase',
               useResult: true
             },
             {
-              server: 'SQLite',
-              tool: 'query',
+              server: 'Filesystem',
+              tool: 'write_file',
               arguments: {
-                query: 'SELECT name FROM sqlite_master WHERE type=\'table\' ORDER BY name'
+                path: './docs/database-schema.md',
+                content: t('workflow.contents.databaseSchemaDoc')
               },
-              condition: 'context.hasSQLiteDatabase',
+              useResult: false
+            }
+          ]
+        },
+        {
+          id: 'business-logic',
+          name: '业务逻辑',
+          description: '业务逻辑',
+          mcpCalls: [
+            {
+              server: 'GitHub',
+              tool: 'search_repositories',
+              arguments: {
+                query: t('workflow.queries.businessLogicPatterns'),
+                max_results: 8
+              },
               useResult: true
             }
           ]
         },
         {
-          id: 'service-deployment',
-          name: '服务部署',
-          description: '部署后端服务到生产环境'
+          id: 'performance-optimization',
+          name: '性能优化',
+          description: '性能优化'
         }
       ]
     });
 
     // 测试工程师工作流配置
-    this.roleWorkflows.set('test-engineer', {
+    this.roleWorkflows.set('qa-engineer', {
       name: '测试工程师',
       description: '负责软件测试和质量保障',
       steps: [
@@ -542,43 +559,35 @@ export class RoleManager extends EventEmitter {
               arguments: {
                 url: 'http://localhost:3000',
                 width: 1920,
-                height: 1080,
-                fullPage: true
+                height: 720
               },
-              condition: 'context.hasTestEnvironment',
+              condition: 'context.hasLocalServer',
               useResult: true
-            },
-            {
-              server: 'Filesystem',
-              tool: 'write_file',
-              arguments: {
-                path: './tests/automated/test-suite.js',
-                content: 'const { test, expect } = require("@playwright/test");\n\n// 自动化测试套件'
-              },
-              useResult: false
             }
           ]
         },
         {
-          id: 'performance-testing',
-          name: '性能测试',
-          description: '执行性能测试和负载测试',
+          id: 'manual-testing',
+          name: '手工测试',
+          description: '手工测试',
           mcpCalls: [
             {
-              server: 'PostgreSQL',
-              tool: 'query',
+              server: 'Puppeteer',
+              tool: 'screenshot',
               arguments: {
-                query: 'SELECT AVG(response_time) as avg_response, MAX(response_time) as max_response FROM performance_logs WHERE timestamp > NOW() - INTERVAL \'1 hour\''
+                url: 'http://localhost:3000',
+                width: 1280,
+                height: 720
               },
-              condition: 'context.hasPerformanceDatabase',
+              condition: 'context.hasLocalServer',
               useResult: true
             }
           ]
         },
         {
-          id: 'test-report',
-          name: '测试报告',
-          description: '生成测试报告和质量评估'
+          id: 'bug-tracking',
+          name: 'Bug跟踪',
+          description: 'Bug跟踪'
         }
       ]
     });

@@ -1,3 +1,6 @@
+import { randomUUID } from 'crypto';
+import { t } from '../i18n';
+
 // ===== 云端计数器版 - 0 服务器 =====
 const WORKER = 'https://codebuddy-counter.xiaolongwu996.workers.dev'; // 你的 Worker 域名
 
@@ -12,8 +15,6 @@ export async function needPay(deviceId: string): Promise<boolean> {
 export async function markPaid(deviceId: string): Promise<void> {
   await fetch(`${WORKER}?action=pay&d=${deviceId}`);
 }
-
-import { randomUUID } from 'crypto';
 
 /**
  * 付费墙管理器（云端版）
@@ -56,7 +57,7 @@ export class Paywall {
       const data = await res.json() as { calls: number };
       return data.calls;
     } catch (error) {
-      console.warn('云端计数器调用失败:', error);
+      console.warn(t('paywall.cloudCounterFailed'), error);
       return 0;
     }
   }
@@ -74,7 +75,7 @@ export class Paywall {
       const data = await res.json() as { calls: number };
       return data.calls;
     } catch (error) {
-      console.warn('云端获取调用次数失败:', error);
+      console.warn(t('paywall.getCallsFailed'), error);
       return 0;
     }
   }
@@ -91,7 +92,7 @@ export class Paywall {
       const data = await res.json() as { needPay: boolean };
       return data.needPay;
     } catch (error) {
-      console.warn('云端计数器检查失败:', error);
+      console.warn(t('paywall.cloudCheckFailed'), error);
       return false;
     }
   }
@@ -123,7 +124,7 @@ export class Paywall {
     try {
       await fetch(`${WORKER}?action=reset&d=${id}`);
     } catch (error) {
-      console.warn('云端重置计数失败:', error);
+      console.warn(t('paywall.resetFailed'), error);
     }
   }
 
