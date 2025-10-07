@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { EventEmitter } from 'events';
 import { t } from '../i18n';
 
 // ===== 云端计数器版 - 0 服务器 =====
